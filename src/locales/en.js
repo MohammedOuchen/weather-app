@@ -7,4 +7,5 @@ export default {
     loading: 'Loading...',
     heroTitle: 'Check the Weather Forecast',
     heroSubtitle: 'Get the latest weather updates and forecasts for your city',
+    enterCityPlaceholder: 'Enter the name of the city'
   };
