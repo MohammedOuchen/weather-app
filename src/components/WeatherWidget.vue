@@ -8,11 +8,11 @@
     <div v-if="loading" class="mt-4 text-center text-blue-600 font-bold">Loading...</div>
 
     <div v-if="weatherData" class="mt-6 text-center">
-      <h2 class="text-2xl font-bold text-gray-800">{{ weatherData.location.name }}</h2>
-      <p class="text-gray-600">Temperature: <span class="font-bold text-lg">{{ weatherData.current.temp_c }}°C</span></p>
-      <p class="text-gray-600">Humidity: <span class="font-bold">{{ weatherData.current.humidity }}%</span></p>
-      <p class="text-gray-600">Condition: <span class="font-bold">{{ weatherData.current.condition.text }}</span></p>
-      <img :src="weatherData.current.condition.icon" alt="Weather condition" class="mx-auto mt-4" />
+      <h2 class="text-2xl font-bold text-gray-800">{{ weatherData?.location?.name }}</h2>
+      <p class="text-gray-600">Temperature: <span class="font-bold text-lg">{{ weatherData?.current?.temp_c }}°C</span></p>
+      <p class="text-gray-600">Humidity: <span class="font-bold">{{ weatherData?.current?.humidity }}%</span></p>
+      <p class="text-gray-600">Condition: <span class="font-bold">{{ weatherData?.current?.condition?.text }}</span></p>
+      <img :src="weatherData?.current?.condition?.icon" alt="Weather condition" class="mx-auto mt-4" />
     </div>
 
     <div v-if="forecastData" class="mt-6">
@@ -29,59 +29,50 @@
   </div>
 </template>
 
-<script>
-import axios from 'axios';
-import { ref, onMounted } from 'vue';
+<script setup>
+import axios from 'axios'
+import { ref, onMounted, watch } from 'vue'
 
-export default {
-  name: 'WeatherWidget',
-  setup() {
-    const cities = ['Paris', 'London', 'New York', 'Tokyo'];
-    const selectedCity = ref('Paris');
-    const weatherData = ref(null);
-    const forecastData = ref(null);
-    const loading = ref(false);
+const cities = ['Paris', 'London', 'New York', 'Tokyo']
+const selectedCity = ref('Paris')
+const weatherData = ref(null)
+const forecastData = ref(null)
+const loading = ref(false)
 
-    const getWeatherData = async () => {
-      loading.value = true;
-      try {
-        const response = await axios.get(
-          `http://api.weatherapi.com/v1/current.json?key=47a51ac91d6f491c953222711230507&q=${selectedCity.value}&aqi=no`
-        );
-        weatherData.value = response.data;
-      } catch (error) {
-        console.error(error);
-      } finally {
-        loading.value = false;
-      }
-    };
+async function getWeatherData() {
+  loading.value = true
+  try {
+    const { data } = await axios.get(
+      `http://api.weatherapi.com/v1/current.json?key=47a51ac91d6f491c953222711230507&q=${selectedCity.value}&aqi=no`
+    )
+    weatherData.value = data
+  } catch (error) {
+    console.error(error)
+  } finally {
+    loading.value = false
+  }
+}
 
-    const getForecastData = async () => {
-      try {
-        const response = await axios.get(
-          `http://api.weatherapi.com/v1/forecast.json?key=47a51ac91d6f491c953222711230507&q=${selectedCity.value}&days=7`
-        );
-        forecastData.value = response.data;
-      } catch (error) {
-        console.error(error);
-      }
-    };
+async function getForecastData() {
+  try {
+    const { data } = await axios.get(
+      `http://api.weatherapi.com/v1/forecast.json?key=47a51ac91d6f491c953222711230507&q=${selectedCity.value}&days=7`
+    )
+    forecastData.value = data
+  } catch (error) {
+    console.error(error)
+  }
+}
 
-    onMounted(() => {
-      getWeatherData();
-      getForecastData();
-    });
+onMounted(() => {
+  getWeatherData()
+  getForecastData()
+})
 
-    return {
-      cities,
-      selectedCity,
-      weatherData,
-      forecastData,
-      loading,
-      getWeatherData,
-    };
-  },
-};
+watch(selectedCity, async () => {
+  await getWeatherData()
+  await getForecastData()
+})
 </script>
 
 <style scoped>
